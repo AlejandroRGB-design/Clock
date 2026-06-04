@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reloj de Teclas de Metal Premium - Click RGB</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background-color: #020203; /* Fondo negro absoluto para máximo contraste */
+            font-family: sans-serif;
+            overflow: hidden;
+            user-select: none;
+        }
+
+        /* FILTRO / EFECTO COMÚN DE METAL CEPILLADO Y BISELADO PREMIUM */
+        .premium-metal {
+            position: relative;
+            cursor: pointer;
+            will-change: transform, filter;
+            transition: filter 0.5s ease-out, border-color 0.1s linear;
+            
+            /* Borde translúcido para que el bisel absorba el color de fondo */
+            border: 3px solid rgba(255, 255, 255, 0.12);
+            
+            /* Profundidad de teclado mecánico pesado */
+            box-shadow: 
+                inset 0 4px 10px rgba(255, 255, 255, 0.08),
+                inset 0 -15px 30px rgba(0, 0, 0, 0.85),
+                0 25px 50px rgba(0, 0, 0, 0.9);
+        }
+
+        /* TEXTURA DE METAL CEPILLADO */
+        .premium-metal::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            border-radius: inherit;
+            background: repeating-linear-gradient(
+                90deg,
+                rgba(255, 255, 255, 0.04) 0px,
+                rgba(255, 255, 255, 0.04) 1px,
+                transparent 1px,
+                transparent 3px
+            );
+            pointer-events: none;
+            z-index: 2;
+            mix-blend-mode: overlay; 
+        }
+
+        /* CONTENEDOR PRINCIPAL RECTÁNGULO EXTERIOR (HORA) */
+        .clock-container {
+            --h1: 0; --h2: 40;
+            width: 90vw;
+            max-width: 500px;
+            height: 90vh;
+            max-height: 700px;
+            border-radius: 44px;
+            
+            /* Cambio de color instantáneo como un click digital */
+            background: 
+                radial-gradient(circle at 15% 15%, hsl(var(--h1), 95%, 45%) 0%, transparent 75%),
+                radial-gradient(circle at 85% 45%, hsl(var(--h2), 100%, 40%) 0%, transparent 75%),
+                linear-gradient(135deg, #181920 0%, #08090c 100%);
+
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        /* RECTÁNGULO MEDIANO (MINUTO) */
+        .rect-minute {
+            --h1: 120; --h2: 160;
+            width: 76%;
+            height: 83%;
+            border-radius: 32px;
+            
+            background: 
+                radial-gradient(circle at 85% 15%, hsl(var(--h1), 95%, 40%) 0%, transparent 75%),
+                radial-gradient(circle at 15% 65%, hsl(var(--h2), 100%, 35%) 0%, transparent 75%),
+                linear-gradient(135deg, #14151b 0%, #060709 100%);
+
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        /* RECTÁNGULO INTERIOR (SEGUNDO) */
+        .rect-second {
+            --h1: 240; --h2: 290;
+            width: 52%;
+            height: 74%;
+            border-radius: 22px;
+            
+            background: 
+                radial-gradient(circle at 50% 15%, hsl(var(--h1), 95%, 45%) 0%, transparent 80%),
+                radial-gradient(circle at 85% 85%, hsl(var(--h2), 100%, 40%) 0%, transparent 80%),
+                linear-gradient(135deg, #111216 0%, #040507 100%);
+        }
+
+        /* ANIMACIÓN DE PULSACIÓN DE TECLA PESADA */
+        .press-animation {
+            animation: pressKey 0.28s cubic-bezier(0.25, 1, 0.5, 1);
+        }
+
+        @keyframes pressKey {
+            0% { transform: scale(1); }
+            30% { 
+                transform: scale(0.95); 
+                box-shadow: 
+                    inset 0 2px 5px rgba(255, 255, 255, 0.05),
+                    inset 0 -5px 15px rgba(0, 0, 0, 0.95),
+                    0 5px 20px rgba(0, 0, 0, 0.95);
+            }
+            100% { transform: scale(1); }
+        }
+
+        /* RETROILUMINACIÓN CELESTE BRILLANTE */
+        .glow-active {
+            filter: drop-shadow(0 0 25px rgba(0, 243, 255, 0.95)) 
+                    drop-shadow(0 0 55px rgba(0, 222, 255, 0.6));
+            border-color: rgba(0, 243, 255, 0.85) !important;
+            transition: filter 0s, border-color 0s;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="clock-container premium-metal" id="rect-hour">
+        <div class="rect-minute premium-metal" id="rect-minute">
+            <div class="rect-second premium-metal" id="rect-second"></div>
+        </div>
+    </div>
+
+    <script>
+        let lastH = -1, lastM = -1, lastS = -1;
+
+        const rectHour = document.getElementById('rect-hour');
+        const rectMinute = document.getElementById('rect-minute');
+        const rectSecond = document.getElementById('rect-second');
+
+        // Modifica los colores HSL usando pasos enteros exactos (click instantáneo)
+        function setMeshColors(element, value, maxSteps) {
+            const baseHue = Math.floor((value / maxSteps) * 360);
+            const hue2 = (baseHue + 40) % 360;
+
+            element.style.setProperty('--h1', baseHue);
+            element.style.setProperty('--h2', hue2);
+            
+            if (!element.classList.contains('glow-active')) {
+                element.style.borderColor = `hsla(${baseHue}, 80%, 40%, 0.35)`;
+            }
+        }
+
+        // Activa la pulsación física y el flash celeste
+        function triggerKeyEffects(element) {
+            element.classList.remove('press-animation');
+            void element.offsetWidth; 
+            element.classList.add('press-animation');
+
+            element.classList.remove('glow-active');
+            void element.offsetWidth; 
+            element.classList.add('glow-active');
+
+            setTimeout(() => {
+                element.classList.remove('glow-active');
+            }, 70); 
+        }
+
+        // --- INTERACCION MANUAL (CLIC / TOQUE) ---
+        rectSecond.addEventListener('pointerdown', (e) => {
+            e.stopPropagation(); 
+            triggerKeyEffects(rectSecond);
+        });
+
+        rectMinute.addEventListener('pointerdown', (e) => {
+            e.stopPropagation();
+            triggerKeyEffects(rectMinute);
+        });
+
+        rectHour.addEventListener('pointerdown', (e) => {
+            e.stopPropagation();
+            triggerKeyEffects(rectHour);
+        });
+
+
+        // --- ACTUALIZACIÓN EN TIEMPO REAL ---
+        function updateClock() {
+            const now = new Date();
+            const h = now.getHours();
+            const m = now.getMinutes();
+            const s = now.getSeconds();
+
+            // DETECCIONES AUTOMÁTICAS POR PASO DE TIEMPO
+
+            // 1. Cada Segundo: Salto de color e impacto visual al unísono
+            if (s !== lastS) {
+                setMeshColors(rectSecond, s, 60); 
+                if (lastS !== -1) {
+                    triggerKeyEffects(rectSecond);
+                }
+                lastS = s;
+            }
+
+            // 2. Cada 60 Segundos (Cambio de minuto: click en la tecla de atrás)
+            if (m !== lastM) {
+                setMeshColors(rectMinute, m, 60); 
+                if (lastM !== -1) {
+                    triggerKeyEffects(rectMinute);
+                }
+                lastM = m;
+            }
+
+            // 3. Cada 60 Minutos (Cambio de hora: click en la tecla del fondo)
+            if (h !== lastH) {
+                setMeshColors(rectHour, h % 12, 12); 
+                if (lastH !== -1) {
+                    triggerKeyEffects(rectHour);
+                }
+                lastH = h;
+            }
+        }
+
+        // Bucle rápido de revisión para capturar el instante exacto del segundo
+        setInterval(updateClock, 30);
+        updateClock();
+    </script>
+</body>
+</html>
